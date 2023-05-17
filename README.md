@@ -1,11 +1,7 @@
 # Vision Transformers for Single Image Dehazing
 
-[![Demo](https://img.shields.io/badge/Demo-Hugging%20Face-gold)](https://huggingface.co/spaces/IDKiro/DehazeFormer_Demo)
 [![Paper](https://img.shields.io/badge/Paper-IEEE%20TIP-blue)](https://doi.org/10.1109/TIP.2023.3256763) 
-[![Paper2](https://img.shields.io/badge/Paper-arXiv-blue)](https://arxiv.org/abs/2204.03883) 
-[![GoogleDrive](https://img.shields.io/badge/Data-GoogleDrive-brightgreen)](https://drive.google.com/drive/folders/1Yy_GH6_bydYPU6_JJzFQwig4LTh86VI4?usp=sharing)
-[![BaiduPan](https://img.shields.io/badge/Data-BaiduPan-brightgreen)](https://pan.baidu.com/s/1WVdNccqDMnJ5k5Q__Y2dsg?pwd=gtuw)
-
+[![BaiduPan]((https://pan.baidu.com/s/1_oBNNvutNP1brZVxCqVfVQ?pwd=nq0f)
 > **Abstract:** 
 Image dehazing is a representative low-level vision task that estimates latent haze-free images from hazy images.
 In recent years, convolutional neural network-based methods have dominated image dehazing.
