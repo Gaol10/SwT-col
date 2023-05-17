@@ -13,7 +13,7 @@ Specifically, on the most frequently used SOTS indoor set, our small model outpe
 To the best of our knowledge, our large model is the first method with the PSNR over 40 dB on the SOTS indoor set, dramatically outperforming the previous state-of-the-art methods.
 We also collect a large-scale realistic remote sensing dehazing dataset for evaluating the method's capability to remove highly non-homogeneous haze.
 
-![DehazeFormer](figs/arch.png)
+![SwT-col](figs/arch.png)
 
 ## News
 
