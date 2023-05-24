@@ -48,7 +48,7 @@ class ListAverageMeter(object):
             self.avg[i] = self.sum[i] / self.count
 
 
-def read_img_grey(filename):
+def read_img_gray(filename):
     img = cv2.imread(filename, 3)
     img = cv2.cvtColor(cv2.resize(img, (300, 300)), cv2.COLOR_BGR2Lab)
     # img = cv2.cvtColor(img, cv2.COLOR_BGR2Lab)
