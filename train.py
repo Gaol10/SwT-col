@@ -11,34 +11,19 @@ from tqdm import tqdm
 import numpy as np
 import cv2
 
-from utils import AverageMeter, hwc_to_chw, to_lab
+from utils import AverageMeter
 from datasets.loader import PairLoader
 from models import *
 
-# ablation L1Loss->MSELoss()
-# PSNR: 29.82	SSIM: 0.918
-#     		->CrossEntropyLoss
-# NaN
-
-# norm
-# a) remove the norm before MHSA
-# b) add normbefore MHSA
-
-# parallel convolution
-# a) remove the parallel conv ->PSNR:30.34 SSIM:0.922
-# b) replace parallel V with X ->PSNR:30.37 SSIM->0.921
-# c) Parallel DWConv on X ->PSNR:30.19 SSIM:0.921
-# d) OWConv before MLP->PSNR:30.51 SSIM:0.922
-
-
 parser = argparse.ArgumentParser()
-parser.add_argument('--model', default='dehazeformer-l', type=str, help='model name')
+parser.add_argument('--model', default='dehazeformer-t', type=str, help='model name')
 parser.add_argument('--num_workers', default=4, type=int, help='number of workers')
 parser.add_argument('--no_autocast', action='store_false', default=True, help='disable autocast')
 parser.add_argument('--save_dir', default='./saved_models/', type=str, help='path to models saving')
 parser.add_argument('--data_dir', default='./data/', type=str, help='path to dataset')
 parser.add_argument('--log_dir', default='./logs/', type=str, help='path to logs')
 parser.add_argument('--dataset', default='DATASET', type=str, help='dataset name')
+parser.add_argument('--exp', default='indoor', type=str, help='experiment setting')
 parser.add_argument('--gpu', default='0,1', type=str, help='GPUs used for training')
 args = parser.parse_args()
 
@@ -55,18 +40,13 @@ def train(train_loader, network, criterion, optimizer, scaler):
 
     network.train()
 
-    for batch in train_loader:  # 此处才读GT
+    for batch in train_loader: 
 
         train_count += 1
 
         target_img = batch['target'].cuda()
         source_img = batch['source'].cuda()
-        # print(batch['filename'])
 
-        # target_lab = hwc_to_chw(target_lab)
-        # source_lab = hwc_to_chw(source_lab)# copy() already....
-        # source_lab=torch.tensor(source_lab).unsqueeze(0)
-        # target_lab = torch.tensor(target_lab).unsqueeze(0).cuda()
 
         with autocast(args.no_autocast):
             output = network(source_img).to(device)
@@ -100,18 +80,12 @@ def valid(val_loader, network):
         target_img = batch['target'].cuda()
         source_img = batch['source'].cuda()
 
-        # target_lab, source_lab = to_lab(target_img)
-        # target_lab = hwc_to_chw(target_lab)
-        # source_lab = hwc_to_chw(source_lab)  # copy() already....
-        # source_lab = torch.tensor(source_lab).unsqueeze(0)
-        # target_lab = torch.tensor(target_lab).unsqueeze(0).cuda()
-
         with torch.no_grad():  # torch.no_grad() may cause warning
             output = network(source_img).clamp_(-1, 1)
 
         mse_loss = F.mse_loss(output * 0.5 + 0.5, target_img * 0.5 + 0.5, reduction='none').mean((1, 2, 3))
         psnr = 10 * torch.log10(1 / mse_loss).mean()
-        if val_count % 50 == 0:
+        if val_count % 10 == 0:
             print("第{}批验证结束，当前psnr={}".format(val_count, psnr))
         PSNR.update(psnr.item(), source_img.size(0))
 
@@ -119,9 +93,9 @@ def valid(val_loader, network):
 
 
 if __name__ == '__main__':
-    setting_filename = os.path.join('configs', args.model + '.json')
+    setting_filename = os.path.join('configs', args.exp, args.model + '.json')
     if not os.path.exists(setting_filename):
-        setting_filename = os.path.join('configs', 'default.json')
+        setting_filename = os.path.join('configs', args.exp, 'default.json')
     with open(setting_filename, 'r') as f:
         setting = json.load(f)
 
@@ -161,16 +135,14 @@ if __name__ == '__main__':
     os.makedirs(save_dir, exist_ok=True)
 
     # checkpoints
-    checkpoint_path = os.path.join(args.log_dir, args.model)
+    checkpoint_path = os.path.join(args.log_dir, args.exp, args.model)
     if not os.path.exists(checkpoint_path):
         os.makedirs(checkpoint_path)
 
-    # load the checkpoints
     # latest_checkpoints = torch.load('./logs/indoor/dehazeformer-l_epoch_340.pt')
     # network.load_state_dict(latest_checkpoints['model_state_dict'])
     # optimizer.load_state_dict(latest_checkpoints['optimizer_state_dict'])
     # epo = latest_checkpoints['epoch']+1
-    # if we want to restore the training we delete 'epo = 0' which is for a new training
     epo = 0
 
     if not os.path.exists(os.path.join(save_dir, args.model + '.pth')):
@@ -181,7 +153,7 @@ if __name__ == '__main__':
 
         best_psnr = 0
         for epoch in tqdm(range(epo, setting['epochs'])):
-            print("---------the beginning of train epoch:{}---------".format(epoch))
+            print("---------第{}轮训练开始---------".format(epoch))
 
             loss = train(train_loader, network, criterion, optimizer, scaler)
 
@@ -208,8 +180,8 @@ if __name__ == '__main__':
                                os.path.join(save_dir, args.model + '.pth'))
 
                 writer.add_scalar('best_psnr', best_psnr, epoch)
-            print("---------the end of training epoch:{}---------".format(epoch))
-            print("---loss:{} psnr:{}------- ".format(loss, avg_psnr))
+            print("---------第{}轮训练结束---------".format(epoch))
+            print("---当前loss:{} psnr:{}------- ".format(loss, avg_psnr))
 
     else:
         print('==> Existing trained model')
