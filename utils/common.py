@@ -51,7 +51,6 @@ class ListAverageMeter(object):
 def read_img_gray(filename):
     img = cv2.imread(filename, 3)
     img = cv2.cvtColor(cv2.resize(img, (300, 300)), cv2.COLOR_BGR2Lab)
-    # img = cv2.cvtColor(img, cv2.COLOR_BGR2Lab)
     img = img[:, :, 0]
     img = np.expand_dims(img, axis=2)
     img = np.concatenate((img, img, img), axis=2)
@@ -61,12 +60,10 @@ def read_img_gray(filename):
 def read_img(filename):
     img1 = cv2.imread(filename, 3)
     img = cv2.cvtColor(cv2.resize(img1, (300, 300)), cv2.COLOR_BGR2Lab)
-    # img = cv2.cvtColor(img1, cv2.COLOR_BGR2Lab)
     return img.astype('float32') / 255.0
 
 
 def write_img(filename, img):
-    # img = np.round((img[:, :, ::-1].copy() * 255.0)).astype('uint8')
     cv2.imwrite(filename, img)
 
 
