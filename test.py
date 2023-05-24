@@ -71,9 +71,9 @@ def test(test_loader, network, result_dir):
 
 			_, _, H, W = output.size()
 			down_ratio = max(1, round(min(H, W) / 256))		# Zhou Wang
-			ssim_val = ssim(F.adaptive_avg_pool2d(output, (int(H / down_ratio), int(W / down_ratio))),
-							F.adaptive_avg_pool2d(target, (int(H / down_ratio), int(W / down_ratio))),
-							data_range=1, size_average=False).item()
+			ssim_val = ssim(F.adaptive_avg_pool2d(output, (int(H / down_ratio), int(W / down_ratio))), 
+							F.adaptive_avg_pool2d(target, (int(H / down_ratio), int(W / down_ratio))), 
+							data_range=1, size_average=False).item()				
 
 		PSNR.update(psnr_val)
 		SSIM.update(ssim_val)
