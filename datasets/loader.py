@@ -72,15 +72,15 @@ class PairLoader(Dataset):
 
 		# read image, and scale [0, 1] to [-1, 1]
 		img_name = self.img_names[idx]
-		#source_img = read_img(os.path.join(self.root_dir, 'hazy', img_name)) * 2 - 1
+		source_img = read_img(os.path.join(self.root_dir, 'hazy', img_name)) * 2 - 1
 		target_img = read_img(os.path.join(self.root_dir, 'GT', img_name)) * 2 - 1
 		
 		if self.mode == 'train':
-			[target_img] = augment([target_img], self.size, self.edge_decay, self.only_h_flip)
+			[target_img, source_img] = augment([target_img, source_img], self.size, self.edge_decay, self.only_h_flip)
 
 		if self.mode == 'valid':
-			[target_img] = align([target_img], self.size)
+			[target_img, source_img] = align([target_img, source_img], self.size)
 
-		return {'target': target_img, 'filename': img_name}
+		return {'target': target_img,'source':source_img, 'filename': img_name}
 		# C 通道数 w 宽 h 高
 
